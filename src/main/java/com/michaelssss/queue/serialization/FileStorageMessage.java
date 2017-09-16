@@ -86,6 +86,16 @@ public class FileStorageMessage extends Message {
     }
 
     @Override
+    public void delete() {
+        try {
+            String path = this.getClass().getResource("/").getPath().substring(1);
+            Files.deleteIfExists(Paths.get(path, topic, uuid));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     public String toString() {
         return "FileStorageMessage{" +
                 "uuid='" + uuid + '\'' +

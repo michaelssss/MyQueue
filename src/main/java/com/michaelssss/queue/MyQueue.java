@@ -13,11 +13,21 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 public class MyQueue<T extends Serializable> extends ConcurrentLinkedQueue<Message> implements Queue<T> {
     private String topic;
-    private Collection<String> uuids;
 
     public MyQueue(String topic) {
         this.topic = topic;
-        uuids = FileStorage.getInstance().loadAllMessageInTopic(topic);
+        Collection<String> uuids = FileStorage.getInstance().loadAllMessageInTopic(topic);
+        for (String uuid : uuids) {
+            Message message = new FileStorageMessage(uuid, (String) topic);
+            try {
+                message.load();
+                if (!message.isCosumed()) {
+                    offer(message);
+                }
+            } catch (Exception e) {
+                continue;
+            }
+        }
     }
 
     public void enQueue(T o) {

@@ -29,6 +29,10 @@ public abstract class Message implements Serializable {
         update();
     }
 
+    public boolean isCosumed() {
+        return null != cosumingTime;
+    }
+
     public abstract Object getMessage() throws IOException, ClassNotFoundException;
 
     public abstract void update();
@@ -36,4 +40,6 @@ public abstract class Message implements Serializable {
     public abstract void commit();
 
     public abstract void load() throws IOException, ClassNotFoundException;
+
+    public abstract void delete();
 }
