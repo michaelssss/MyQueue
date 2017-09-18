@@ -18,6 +18,10 @@ public class MyQueue<T extends Serializable> extends ConcurrentLinkedQueue<Messa
     public MyQueue(String topic) {
         storage = CompressFileStorage.getInstance(topic);
         this.topic = topic;
+
+    }
+
+    private void loadStorage() {
         Collection<String> uuids = storage.loadIndex();
         for (String uuid : uuids) {
             Message message = Message.create(storage, uuid, (String) topic);
@@ -41,14 +45,13 @@ public class MyQueue<T extends Serializable> extends ConcurrentLinkedQueue<Messa
     }
 
     public T deQueue() {
-        try {
-            Message message = this.poll();
-            message.cosume();
-            System.out.println(message);
-            return (T) message.getMessage();
-        } catch (Exception e) {
-            e.printStackTrace();
+        Message message = this.poll();
+        if (null == message) {
+            loadStorage();
         }
-        return null;
+        message = this.poll();
+        message.cosume();
+        System.out.println(message);
+        return (T) message.getMessage();
     }
 }
