@@ -38,7 +38,7 @@ public class Starter {
             queue.enQueue(os1.toString());
             t.sendResponseHeaders(200, os1.toByteArray().length);
             OutputStream os = t.getResponseBody();
-            os.write(queue.deQueue().getBytes());
+//            os.write(queue.deQueue().getBytes());
             os.close();
         }
     }

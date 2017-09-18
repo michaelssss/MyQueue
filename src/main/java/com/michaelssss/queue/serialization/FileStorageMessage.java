@@ -6,24 +6,24 @@ import java.io.*;
  * Created by michaelssss on 2017/9/16.
  */
 public class FileStorageMessage extends Message {
-    private transient FileStorage fileStorage;
+    protected transient Storage storage;
 
-    public FileStorageMessage(String topic, Serializable message) {
+    protected FileStorageMessage(Storage storage, String topic, Serializable message) {
         super(topic, message);
-        fileStorage = FileStorage.getInstace(topic);
+        this.storage = storage;
     }
 
-    public FileStorageMessage(String uuid, String topic) {
+    protected FileStorageMessage(Storage storage, String uuid, String topic) {
         this.uuid = uuid;
         this.topic = topic;
-        fileStorage = FileStorage.getInstace(topic);
+        this.storage = storage;
     }
 
 
     @Override
     public void update() {
         try {
-            fileStorage.update(this.uuid, getSerializationByte(this));
+            storage.update(this.uuid, getSerializationByte(this));
         } catch (IOException e) {
             //assert save never failed
         }
@@ -45,7 +45,7 @@ public class FileStorageMessage extends Message {
     @Override
     public void commit() {
         try {
-            fileStorage.save(uuid, getSerializationByte(this));
+            storage.save(uuid, getSerializationByte(this));
         } catch (IOException e) {
             System.err.printf("save Object failed because" + e.getMessage());
         }
@@ -53,7 +53,7 @@ public class FileStorageMessage extends Message {
 
     @Override
     public void load() throws IOException, ClassNotFoundException {
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(fileStorage.get(uuid));
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(storage.get(uuid));
         ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
         Object o = objectInputStream.readObject();
         if (o instanceof Message) {
@@ -69,7 +69,7 @@ public class FileStorageMessage extends Message {
     @Override
     public void delete() {
         try {
-            fileStorage.delete(uuid);
+            storage.delete(uuid);
         } catch (IOException e) {
             //assert delete never failed
         }
