@@ -28,10 +28,10 @@ public class CompressFileStorage implements Storage {
     private CompressFileStorage() {
     }
 
-    public static Collection<String> loadIndex(String topic) {
+    @Override
+    public Collection<String> loadIndex() {
         Collection<String> uuids = new ArrayList<>(128);
         try {
-            Path path = Paths.get(CompressFileStorage.class.getResource("/").getPath().substring(1), topic);
             byte[] bytes = Files.readAllBytes(path.resolve("index"));
             if (bytes.length != 0) {
                 ObjectInputStream objectInputStream = new ObjectInputStream(new ByteArrayInputStream(bytes));

@@ -28,14 +28,15 @@ public class SplitFileStorage implements Storage {
     private SplitFileStorage() {
     }
 
-    public static Collection<String> loadIndex(String topic) {
+    @Override
+    public Collection<String> loadIndex() {
         Collection<String> uuids = new ArrayList<>(128);
         try {
-            DirectoryStream<Path> directoryStream = Files.newDirectoryStream(Paths.get(SplitFileStorage.class.getResource("/").getPath().substring(1), topic));
+            DirectoryStream<Path> directoryStream = Files.newDirectoryStream(path);
             Iterator<Path> iterator = directoryStream.iterator();
             while (iterator.hasNext()) {
                 Path path1 = iterator.next();
-                uuids.add(path1.relativize(Paths.get(SplitFileStorage.class.getResource("/").getPath().substring(1), topic)).toString());
+                uuids.add(path1.relativize(path).toString());
             }
         } catch (Exception e) {
 

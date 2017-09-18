@@ -11,6 +11,6 @@
   by Michaelssss  
   欢迎和我一起玩liangyuming2@gmail.com  
   
-version:compress_file
-  add:
+version:compress_file  
+  add:  
   打包文件访问,原有代码基本不用动,只需要新建类就可以完成新功能,充血模型的优势展示  

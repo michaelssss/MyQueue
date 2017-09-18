@@ -18,7 +18,7 @@ public class MyQueue<T extends Serializable> extends ConcurrentLinkedQueue<Messa
     public MyQueue(String topic) {
         storage = CompressFileStorage.getInstance(topic);
         this.topic = topic;
-        Collection<String> uuids = CompressFileStorage.loadIndex(topic);
+        Collection<String> uuids = storage.loadIndex();
         for (String uuid : uuids) {
             Message message = Message.create(storage, uuid, (String) topic);
             try {
@@ -27,6 +27,7 @@ public class MyQueue<T extends Serializable> extends ConcurrentLinkedQueue<Messa
                     offer(message);
                 }
             } catch (Exception e) {
+                System.err.println(e.getLocalizedMessage());
                 continue;
             }
         }
