@@ -54,7 +54,6 @@ public class CompressFileStorage implements Storage {
             //initial index
             //open data file with random access
             randomAccessFile = new RandomAccessFile(path.resolve("data").toString(), "rw");
-            randomAccessFile.setLength(1024 * 1024);
             byte[] bytes = Files.readAllBytes(path.resolve("index"));
             if (bytes.length != 0) {
                 ObjectInputStream objectInputStream = new ObjectInputStream(new ByteArrayInputStream(bytes));
