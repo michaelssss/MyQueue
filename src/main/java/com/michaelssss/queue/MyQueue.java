@@ -1,6 +1,5 @@
 package com.michaelssss.queue;
 
-import com.michaelssss.queue.serialization.FileStorage;
 import com.michaelssss.queue.serialization.FileStorageMessage;
 import com.michaelssss.queue.serialization.Message;
 
@@ -16,7 +15,7 @@ public class MyQueue<T extends Serializable> extends ConcurrentLinkedQueue<Messa
 
     public MyQueue(String topic) {
         this.topic = topic;
-        Collection<String> uuids = FileStorage.getInstance().loadAllMessageInTopic(topic);
+        Collection<String> uuids = Message.loadAllMessageInTopic(topic);
         for (String uuid : uuids) {
             Message message = new FileStorageMessage(uuid, (String) topic);
             try {

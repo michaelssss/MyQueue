@@ -1,78 +1,59 @@
 package com.michaelssss.queue.serialization;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 /**
  * Created by michaelssss on 2017/9/16.
  */
 public class FileStorageMessage extends Message {
+    private transient FileStorage fileStorage;
+
     public FileStorageMessage(String topic, Serializable message) {
         super(topic, message);
-        preWork(topic);
+        fileStorage = FileStorage.getInstace(topic);
     }
 
     public FileStorageMessage(String uuid, String topic) {
         this.uuid = uuid;
         this.topic = topic;
-        preWork(topic);
+        fileStorage = FileStorage.getInstace(topic);
     }
 
-    private static void preWork(String topic) {
-        try {
-            String path = FileStorageMessage.class.getResource("/").getPath().substring(1);
-            if (Files.notExists(Paths.get(path, topic)))
-                Files.createDirectory(Paths.get(path, topic));
-        } catch (Exception e) {
-            System.err.printf("create dir failed" + e.getLocalizedMessage());
-        }
-    }
 
     @Override
     public void update() {
         try {
-            String path = this.getClass().getResource("/").getPath().substring(1);
-            Files.delete(Paths.get(path, topic, uuid));
-            commit();
-        } catch (Exception e) {
-            System.err.printf("update Object failed because" + e.getMessage());
+            fileStorage.update(this.uuid, getSerializationByte(this));
+        } catch (IOException e) {
+            //assert save never failed
         }
     }
 
 
     @Override
-    public Object getMessage() throws IOException, ClassNotFoundException {
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        ObjectOutputStream o = new ObjectOutputStream(byteArrayOutputStream);
-        o.writeObject(this.message);
-        o.flush();
-        o.close();
-        ObjectInputStream inputStream = new ObjectInputStream(new ByteArrayInputStream(byteArrayOutputStream.toByteArray()));
-        inputStream.close();
-        return inputStream.readObject();
+    public Object getMessage() {
+        try {
+            ObjectInputStream inputStream = new ObjectInputStream(new ByteArrayInputStream(getSerializationByte(this.message)));
+            inputStream.close();
+            return inputStream.readObject();
+        } catch (Exception e) {
+            System.err.println("copy Object failed because " + e.getLocalizedMessage());
+        }
+        return null;
     }
 
     @Override
     public void commit() {
         try {
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            ObjectOutputStream o = new ObjectOutputStream(byteArrayOutputStream);
-            o.writeObject(this);
-            o.flush();
-            o.close();
-            String path = this.getClass().getResource("/").getPath().substring(1);
-            Files.write(Paths.get(path, topic, uuid), byteArrayOutputStream.toByteArray());
-        } catch (Exception e) {
+            fileStorage.save(uuid, getSerializationByte(this));
+        } catch (IOException e) {
             System.err.printf("save Object failed because" + e.getMessage());
         }
     }
 
     @Override
     public void load() throws IOException, ClassNotFoundException {
-        String path = this.getClass().getResource("/").getPath().substring(1);
-        byte[] bytes = Files.readAllBytes(Paths.get(path, topic, uuid));
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(bytes);
+        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(fileStorage.get(uuid));
         ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream);
         Object o = objectInputStream.readObject();
         if (o instanceof Message) {
@@ -88,11 +69,19 @@ public class FileStorageMessage extends Message {
     @Override
     public void delete() {
         try {
-            String path = this.getClass().getResource("/").getPath().substring(1);
-            Files.deleteIfExists(Paths.get(path, topic, uuid));
+            fileStorage.delete(uuid);
         } catch (IOException e) {
-            e.printStackTrace();
+            //assert delete never failed
         }
+    }
+
+    private static byte[] getSerializationByte(Serializable serializable) throws IOException {
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        ObjectOutputStream o = new ObjectOutputStream(byteArrayOutputStream);
+        o.writeObject(serializable);
+        o.flush();
+        o.close();
+        return byteArrayOutputStream.toByteArray();
     }
 
     @Override
