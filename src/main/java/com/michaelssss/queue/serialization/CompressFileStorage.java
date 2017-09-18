@@ -38,6 +38,8 @@ public class CompressFileStorage implements Storage {
                 Index index = (Index) objectInputStream.readObject();
                 if (null != index) {
                     uuids = index.index.keySet();
+                    lastFileIndex = index.lastFileIndex;
+                    filename_offset = index.index;
                 }
             }
         } catch (IOException | ClassNotFoundException e) {
